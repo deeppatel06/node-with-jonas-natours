@@ -20,7 +20,6 @@ const DB = process.env.DATABASE.replace(
 mongoose.set('strictQuery', false);
 
 // if you want to connect local database, use process.env.DATABASE_LOCAL instead DB
-
 mongoose
   .connect(DB, {
     useNewUrlParser: true,
