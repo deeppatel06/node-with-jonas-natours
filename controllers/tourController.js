@@ -2,6 +2,14 @@
 
 const Tour = require('./../Models/tourModel');
 
+// alis route with middleware ...
+exports.alisTopTours = async (req, res, next) => {
+  req.query.limit = '5';
+  req.query.sort = '-ratingsAverage,price';
+  req.query.fields = 'name,price,ratingsAverage,summary,difficulty';
+  next();
+};
+
 exports.getAllTours = async (req, res) => {
   try {
     // 1. we can pass this query object directly to the find method ...
@@ -48,6 +56,18 @@ exports.getAllTours = async (req, res) => {
       query = query.select(fields);
     } else {
       query = query.select('-__v'); // used by mongo, no need to send to end user
+    }
+
+    //// 4. Pagination ...
+    const page = req.query.page * 1 || 1;
+    const limit = req.query.limit * 1 || 100;
+    const skip = (page - 1) * limit;
+
+    query = query.skip(skip).limit(limit);
+
+    if (req.query.page) {
+      const numTours = await Tour.countDocuments();
+      if (skip > numTours) throw new Error('This page is not exists.');
     }
 
     // step b. execute query ...
