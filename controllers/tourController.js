@@ -109,16 +109,18 @@ exports.deleteTour = async (req, res) => {
   }
 };
 
+// 101: Aggregation Pipeline: match, group
 exports.getTourStats = async (req, res) => {
   try {
     const stats = await Tour.aggregate([
       {
-        $match: { ratingsAverage: { $gte: 4.5 } },
+        $match: { ratingsAverage: { $gte: 4.6 } },
       },
       {
         $group: {
           // _id: '$difficulty',
           _id: { $toUpper: '$difficulty' },
+          // _id: '$ratingsAverage',
           numTours: { $sum: 1 },
           avgRating: { $avg: '$ratingsAverage' },
           avgPrice: { $avg: '$price' },
@@ -129,9 +131,12 @@ exports.getTourStats = async (req, res) => {
       {
         $sort: { avgPrice: 1 },
       },
+      {
+        $match: { _id: { $ne: 'EASY' } },
+      },
     ]);
 
-    res.status(201).json({
+    res.status(200).json({
       status: 'success',
       data: {
         stats,
@@ -145,6 +150,7 @@ exports.getTourStats = async (req, res) => {
   }
 };
 
+// 102: Aggregation pipeline: unwind, project
 exports.getMonthlyPlans = async (req, res) => {
   try {
     const year = req.params.year * 1;
@@ -186,7 +192,7 @@ exports.getMonthlyPlans = async (req, res) => {
       },
     ]);
 
-    res.status(201).json({
+    res.status(200).json({
       status: 'success',
       data: {
         plan,
